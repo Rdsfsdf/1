@@ -4,119 +4,99 @@
     <meta charset="UTF-8">
     <style>
         body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
+            margin: 0; padding: 0;
+            font-family: 'Verdana', Geneva, sans-serif;
             color: white;
-            overflow: hidden;
-            background: #000;
+            overflow: hidden; background: #000;
         }
 
-        /* Фоновое изображение */
         .background {
+            /* Твоя ссылка уже вставлена сюда */
             background-image: url('https://imgur.com/Ogvr8wQ.png');
             background-size: cover;
             background-position: center;
-            height: 100vh;
-            width: 100vw;
-            position: absolute;
-            z-index: -1;
+            height: 100vh; width: 100vw;
+            position: absolute; z-index: -1;
         }
 
-        /* Слой затемнения для читаемости текста */
+        /* Затемнение нижней части для читаемости */
         .overlay {
             position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 30%;
-            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            bottom: 0; width: 100%; height: 40%;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            z-index: 0;
         }
 
-        /* Левый блок (Инфо о сервере) */
+        .container {
+            position: absolute;
+            bottom: 50px; left: 50px; right: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            z-index: 1;
+        }
+
         .info-left {
-            position: absolute;
-            bottom: 40px;
-            left: 40px;
             font-size: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            line-height: 1.6;
+            text-shadow: 2px 2px 4px rgba(0,0,0,1);
         }
 
-        /* Правый блок (Прогресс) */
         .info-right {
-            position: absolute;
-            bottom: 40px;
-            right: 40px;
-            width: 300px;
+            width: 350px;
             text-align: right;
+            text-shadow: 2px 2px 4px rgba(0,0,0,1);
         }
 
-        /* Полоска загрузки */
-        .progress-container {
-            width: 100%;
-            height: 4px;
-            background: rgba(255,255,255,0.2);
+        /* Полоска прогресса как на скриншоте */
+        .progress-bg {
+            width: 100%; height: 5px;
+            background: rgba(255,255,255,0.1);
             margin-bottom: 10px;
         }
 
         #progress-bar {
-            width: 0%;
-            height: 100%;
-            background: #fff;
-            transition: width 0.3s ease;
+            width: 0%; height: 100%;
+            background: #ffffff;
+            box-shadow: 0 0 10px white;
+            transition: width 0.4s ease;
         }
 
-        .status-text { margin-bottom: 5px; opacity: 0.8; }
+        #status { font-size: 16px; margin-bottom: 5px; opacity: 0.8; }
     </style>
 </head>
 <body>
-
     <div class="background"></div>
     <div class="overlay"></div>
 
-    <div class="info-left">
-        <div id="status" class="status-text">Загрузка...</div>
-        <div id="map">Карта: -</div>
-        <div id="players">Игроки: - / -</div>
-    </div>
-
-    <div class="info-right">
-        <div class="progress-container">
-            <div id="progress-bar"></div>
+    <div class="container">
+        <div class="info-left">
+            <div id="status">Загрузка данных...</div>
+            <div id="map">Карта: gm_flatgrass</div>
+            <div id="players">Слоты: 32</div>
         </div>
-        <div id="percentage">Прогресс: 0%</div>
+
+        <div class="info-right">
+            <div class="progress-bg"><div id="progress-bar"></div></div>
+            <div id="percentage">Прогресс: 0%</div>
+        </div>
     </div>
 
     <script type="text/javascript">
-        // Переменные для расчета процентов
         var totalFiles = 0;
-        var filesNeeded = 0;
-
-        // 1. Получаем данные о карте и игроках
-        function GameDetails( servername, serverurl, mapname, maxplayers, steamid, gamemode ) {
+        function GameDetails(servername, serverurl, mapname, maxplayers) {
             document.getElementById("map").innerHTML = "Карта: " + mapname;
-            document.getElementById("players").innerHTML = "Игроки: " + maxplayers; // Онлайн GMod не отдает напрямую тут, обычно пишут макс. слоты
+            document.getElementById("players").innerHTML = "Слоты: " + maxplayers;
         }
-
-        // 2. Обновляем статус (что сейчас качается)
-        function SetStatusChanged( status ) {
+        function SetStatusChanged(status) {
             document.getElementById("status").innerHTML = status;
         }
-
-        // 3. Считаем процент загрузки файлов
-        function SetFilesTotal( total ) {
-            totalFiles = total;
-        }
-
-        function SetFilesNeeded( needed ) {
-            filesNeeded = needed;
-            refreshProgress();
-        }
-
-        function refreshProgress() {
+        function SetFilesTotal(total) { totalFiles = total; }
+        function SetFilesNeeded(needed) {
             if (totalFiles > 0) {
-                var percentage = Math.floor(((totalFiles - filesNeeded) / totalFiles) * 100);
-                document.getElementById("progress-bar").style.width = percentage + "%";
-                document.getElementById("percentage").innerHTML = "Прогресс: " + percentage + "%";
+                var p = Math.floor(((totalFiles - needed) / totalFiles) * 100);
+                document.getElementById("progress-bar").style.width = p + "%";
+                document.getElementById("percentage").innerHTML = "Прогресс: " + p + "%";
             }
         }
     </script>
