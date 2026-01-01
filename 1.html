@@ -5,13 +5,16 @@
     <style>
         body {
             margin: 0; padding: 0;
-            font-family: 'Verdana', Geneva, sans-serif;
+            font-family: 'Verdana', sans-serif;
             color: white;
             overflow: hidden; background: #000;
+            /* Плавное появление всего экрана */
+            animation: fadeIn 2s;
         }
 
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         .background {
-            /* Твоя ссылка уже вставлена сюда */
             background-image: url('https://imgur.com/Ogvr8wQ.png');
             background-size: cover;
             background-position: center;
@@ -19,50 +22,48 @@
             position: absolute; z-index: -1;
         }
 
-        /* Затемнение нижней части для читаемости */
         .overlay {
             position: absolute;
             bottom: 0; width: 100%; height: 40%;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-            z-index: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
         }
 
         .container {
             position: absolute;
-            bottom: 50px; left: 50px; right: 50px;
+            bottom: 60px; left: 60px; right: 60px;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            z-index: 1;
         }
 
         .info-left {
-            font-size: 20px;
+            font-size: 18px;
             line-height: 1.6;
-            text-shadow: 2px 2px 4px rgba(0,0,0,1);
+            text-shadow: 2px 2px 4px #000;
         }
 
         .info-right {
-            width: 350px;
+            width: 400px;
             text-align: right;
-            text-shadow: 2px 2px 4px rgba(0,0,0,1);
+            text-shadow: 2px 2px 4px #000;
         }
 
-        /* Полоска прогресса как на скриншоте */
         .progress-bg {
-            width: 100%; height: 5px;
+            width: 100%; height: 4px;
             background: rgba(255,255,255,0.1);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            border-radius: 2px;
         }
 
         #progress-bar {
             width: 0%; height: 100%;
-            background: #ffffff;
-            box-shadow: 0 0 10px white;
-            transition: width 0.4s ease;
+            background: #fff;
+            box-shadow: 0 0 15px rgba(255,255,255,0.7);
+            transition: width 0.5s ease;
         }
 
-        #status { font-size: 16px; margin-bottom: 5px; opacity: 0.8; }
+        #status { font-size: 14px; opacity: 0.6; margin-bottom: 5px; text-transform: uppercase; }
+        #percentage { font-weight: bold; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -71,32 +72,38 @@
 
     <div class="container">
         <div class="info-left">
-            <div id="status">Загрузка данных...</div>
-            <div id="map">Карта: gm_flatgrass</div>
-            <div id="players">Слоты: 32</div>
+            <div id="status">Инициализация...</div>
+            <div id="map">Карта: Загрузка...</div>
+            <div id="players">Слоты: -</div>
         </div>
 
         <div class="info-right">
             <div class="progress-bg"><div id="progress-bar"></div></div>
-            <div id="percentage">Прогресс: 0%</div>
+            <div id="percentage">0%</div>
         </div>
     </div>
 
     <script type="text/javascript">
         var totalFiles = 0;
-        function GameDetails(servername, serverurl, mapname, maxplayers) {
+
+        function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode) {
             document.getElementById("map").innerHTML = "Карта: " + mapname;
-            document.getElementById("players").innerHTML = "Слоты: " + maxplayers;
+            document.getElementById("players").innerHTML = "Макс. игроков: " + maxplayers;
         }
+
         function SetStatusChanged(status) {
             document.getElementById("status").innerHTML = status;
         }
-        function SetFilesTotal(total) { totalFiles = total; }
+
+        function SetFilesTotal(total) {
+            totalFiles = total;
+        }
+
         function SetFilesNeeded(needed) {
             if (totalFiles > 0) {
                 var p = Math.floor(((totalFiles - needed) / totalFiles) * 100);
                 document.getElementById("progress-bar").style.width = p + "%";
-                document.getElementById("percentage").innerHTML = "Прогресс: " + p + "%";
+                document.getElementById("percentage").innerHTML = "ЗАГРУЗКА: " + p + "%";
             }
         }
     </script>
