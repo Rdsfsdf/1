@@ -3,65 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        /* Убираем все отступы и фиксируем экран */
-        html, body { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; background: #000; 
-        }
+        body { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: 'Verdana', sans-serif; color: white; }
 
-        .background {
-            background-image: url('https://imgur.com/Ogvr8wQ.png');
-            background-size: cover; background-position: center;
-            width: 100vw; height: 100vh;
-            position: fixed; top: 0; left: 0; z-index: 1;
-        }
-
-        /* Трюк со скрытием: создаем невидимый блок, который "съедает" фокус игры */
-        .viewport-fix {
+        /* Фоновое изображение с плавной сменой */
+        #bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 5; background: rgba(0,0,0,0.2); /* Легкое затемнение */
+            background-size: cover; background-position: center;
+            z-index: 1; transition: background-image 1.5s ease-in-out;
         }
 
-        /* Интерфейс (Карта, Игроки) ставим максимально высоко */
-        .main-ui {
-            position: absolute; bottom: 10%; left: 5%; right: 5%;
-            z-index: 100; display: flex; justify-content: space-between;
-            align-items: flex-end; color: white; font-family: 'Verdana', sans-serif;
-            text-shadow: 0 0 10px rgba(0,0,0,1);
+        /* Черная заглушка внизу для скрытия серого окна GMod */
+        .gmod-blocker {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 140px;
+            background: #000; z-index: 9990;
         }
 
-        .progress-container { width: 350px; text-align: right; }
-        .bar-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.1); margin-bottom: 10px; }
-        #bar-fill { width: 0%; height: 100%; background: #fff; box-shadow: 0 0 15px #fff; transition: 0.3s; }
-        
-        /* Скрываем серое окно физическим смещением */
-        body::after {
-            content: ""; position: fixed; bottom: 0; left: 0;
-            width: 100%; height: 120px; background: black; z-index: 90;
+        /* Интерфейс поверх всего */
+        .ui {
+            position: absolute; bottom: 40px; left: 50px; right: 50px;
+            z-index: 9999; display: flex; justify-content: space-between; align-items: flex-end;
         }
+
+        .left-side { text-transform: uppercase; text-shadow: 2px 2px 5px #000; }
+        .right-side { width: 350px; text-align: right; }
+        .bar-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.1); margin-bottom: 8px; }
+        #bar-inner { width: 0%; height: 100%; background: #fff; box-shadow: 0 0 15px #fff; transition: 0.4s; }
     </style>
 </head>
 <body>
-    <div class="background"></div>
-    <div class="viewport-fix"></div>
+    <div id="bg"></div>
+    <div class="gmod-blocker"></div>
 
-    <div class="main-ui">
-        <div class="info">
-            <div id="status" style="font-size: 14px; opacity: 0.6; text-transform: uppercase;">Инициализация...</div>
+    <div class="ui">
+        <div class="left-side">
+            <div id="status" style="font-size: 14px; opacity: 0.6;">Подключение...</div>
             <div id="map" style="font-size: 20px; margin: 5px 0;">Карта: -</div>
-            <div id="players" style="font-size: 16px; opacity: 0.8;">Игроков: 0 / 0</div>
+            <div id="players">Игроков: 0 / 0</div>
         </div>
-
-        <div class="progress-container">
-            <div class="bar-bg"><div id="bar-fill"></div></div>
+        <div class="right-side">
+            <div class="bar-bg"><div id="bar-inner"></div></div>
             <div id="percentage" style="font-size: 24px; font-weight: bold;">0%</div>
         </div>
     </div>
 
     <script>
-        var totalFiles = 0;
-        var serverIP = "176.120.179.233:27015";
+        // АНАЛОГ var l_bgImages из твоей инструкции
+        var images = [
+            "https://imgur.com/Ogvr8wQ.png", // Твоя текущая картинка
+            "https://i.imgur.com/ССЫЛКА_2.jpg", // Добавь свои ссылки сюда
+            "https://i.imgur.com/ССЫЛКА_3.jpg"
+        ];
+        
+        var currentImg = 0;
+        function changeBG() {
+            document.getElementById('bg').style.backgroundImage = "url('" + images[currentImg] + "')";
+            currentImg = (currentImg + 1) % images.length;
+        }
+        setInterval(changeBG, 5000); // Смена каждые 5 секунд
+        changeBG();
 
+        // СВЯЗЬ С СЕРВЕРОМ 176.120.179.233:27015
+        var serverIP = "176.120.179.233:27015";
         function updateOnline() {
             fetch(`https://api.gmod.su/server/${serverIP}`)
                 .then(r => r.json()).then(data => {
@@ -73,6 +75,8 @@
         updateOnline();
         setInterval(updateOnline, 15000);
 
+        // ФУНКЦИИ GMOD
+        var totalFiles = 0;
         function GameDetails(servername, serverurl, mapname, maxplayers) {
             document.getElementById("map").innerHTML = "КАРТА: " + mapname;
         }
@@ -81,7 +85,7 @@
         function SetFilesNeeded(n) {
             if (totalFiles > 0) {
                 var p = Math.floor(((totalFiles - n) / totalFiles) * 100);
-                document.getElementById("bar-fill").style.width = p + "%";
+                document.getElementById("bar-inner").style.width = p + "%";
                 document.getElementById("percentage").innerHTML = p + "%";
             }
         }
