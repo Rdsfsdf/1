@@ -3,78 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        body {
-            margin: 0; padding: 0;
-            font-family: 'Verdana', sans-serif;
-            color: white;
-            overflow: hidden; background: #000;
-        }
-
+        body { margin: 0; padding: 0; font-family: 'Verdana', sans-serif; color: white; overflow: hidden; background: #000; }
         .background {
             background-image: url('https://imgur.com/Ogvr8wQ.png');
-            background-size: cover;
-            background-position: center;
-            height: 100vh; width: 100vw;
-            position: absolute; z-index: -1;
+            background-size: cover; background-position: center;
+            height: 100vh; width: 100vw; position: absolute; z-index: -1;
         }
-
-        .overlay {
-            position: absolute;
-            bottom: 0; width: 100%; height: 40%;
-            background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+        /* Черная полоса внизу, которая закроет стандартное окно GMod */
+        .blocker {
+            position: fixed; bottom: 0; left: 0;
+            width: 100%; height: 130px; /* Высота должна быть достаточной, чтобы скрыть плашку */
+            background: #000; z-index: 9998;
         }
-
         .container {
-            position: absolute;
-            bottom: 60px; left: 50px; right: 50px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            z-index: 10;
+            position: absolute; bottom: 40px; left: 50px; right: 50px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+            z-index: 9999; /* Выше блокера */
         }
-
-        .info-left {
-            font-size: 16px;
-            line-height: 1.4;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-shadow: 2px 2px 4px #000;
-        }
-
-        .info-right {
-            width: 300px;
-            text-align: right;
-            text-shadow: 2px 2px 4px #000;
-        }
-
-        .progress-bg {
-            width: 100%; height: 3px;
-            background: rgba(255,255,255,0.1);
-            margin-bottom: 8px;
-        }
-
-        #progress-bar {
-            width: 0%; height: 100%;
-            background: #fff;
-            box-shadow: 0 0 10px #fff;
-            transition: width 0.4s ease;
-        }
-
-        #percentage { font-size: 14px; opacity: 0.8; }
-        #status { font-size: 12px; margin-bottom: 5px; opacity: 0.6; }
+        .info-left { font-size: 18px; text-shadow: 2px 2px 4px #000; }
+        .info-right { width: 350px; text-align: right; }
+        .progress-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.1); margin-bottom: 10px; }
+        #progress-bar { width: 0%; height: 100%; background: #fff; transition: width 0.4s ease; }
     </style>
 </head>
 <body>
     <div class="background"></div>
-    <div class="overlay"></div>
-
-    <div class="container">
+    <div class="blocker"></div> <div class="container">
         <div class="info-left">
-            <div id="status">ИНИЦИАЛИЗАЦИЯ...</div>
-            <div id="map">Карта: Загрузка...</div>
+            <div id="status">ЗАГРУЗКА...</div>
+            <div id="map">Карта: -</div>
             <div id="players">Игроков: 0 / 0</div>
         </div>
-
         <div class="info-right">
             <div class="progress-bg"><div id="progress-bar"></div></div>
             <div id="percentage">Progress: 0%</div>
@@ -85,37 +44,26 @@
         var totalFiles = 0;
         var serverIP = "176.120.179.233:27015";
 
-        // Функция запроса реального онлайна
         function updateOnline() {
             fetch(`https://api.gmod.su/server/${serverIP}`)
-                .then(response => response.json())
+                .then(r => r.json())
                 .then(data => {
                     if (data && data.status === "success") {
-                        document.getElementById("players").innerHTML = `Игроков: ${data.players} / ${data.max_players}`;
+                        document.getElementById("players").innerHTML = "Игроков: " + data.players + " / " + data.max_players;
                     }
-                })
-                .catch(err => console.log("Ошибка API онлайна"));
+                }).catch(e => console.log("Ошибка API"));
         }
-
-        // Запускаем обновление онлайна сразу и каждые 15 сек
         updateOnline();
-        setInterval(updateOnline, 15000);
+        setInterval(updateOnline, 20000);
 
-        // Стандартные функции GMod
         function GameDetails(servername, serverurl, mapname, maxplayers) {
             document.getElementById("map").innerHTML = "Карта: " + mapname;
-            // Если API еще не ответило, подставляем макс. игроков из движка
-            if(document.getElementById("players").innerText.includes("-")) {
+            if (document.getElementById("players").innerHTML.includes("0 / 0")) {
                 document.getElementById("players").innerHTML = "Игроков: 0 / " + maxplayers;
             }
         }
-
-        function SetStatusChanged(status) {
-            document.getElementById("status").innerHTML = status;
-        }
-
+        function SetStatusChanged(status) { document.getElementById("status").innerHTML = status; }
         function SetFilesTotal(total) { totalFiles = total; }
-
         function SetFilesNeeded(needed) {
             if (totalFiles > 0) {
                 var p = Math.floor(((totalFiles - needed) / totalFiles) * 100);
