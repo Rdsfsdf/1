@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            color: white;
+            overflow: hidden;
+            background: #000;
+        }
+
+        /* Фоновое изображение */
+        .background {
+            background-image: url('https://imgur.com/Ogvr8wQ.png');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            width: 100vw;
+            position: absolute;
+            z-index: -1;
+        }
+
+        /* Слой затемнения для читаемости текста */
+        .overlay {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+        }
+
+        /* Левый блок (Инфо о сервере) */
+        .info-left {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            font-size: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        /* Правый блок (Прогресс) */
+        .info-right {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            width: 300px;
+            text-align: right;
+        }
+
+        /* Полоска загрузки */
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            margin-bottom: 10px;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #fff;
+            transition: width 0.3s ease;
+        }
+
+        .status-text { margin-bottom: 5px; opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+    <div class="background"></div>
+    <div class="overlay"></div>
+
+    <div class="info-left">
+        <div id="status" class="status-text">Загрузка...</div>
+        <div id="map">Карта: -</div>
+        <div id="players">Игроки: - / -</div>
+    </div>
+
+    <div class="info-right">
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="percentage">Прогресс: 0%</div>
+    </div>
+
+    <script type="text/javascript">
+        // Переменные для расчета процентов
+        var totalFiles = 0;
+        var filesNeeded = 0;
+
+        // 1. Получаем данные о карте и игроках
+        function GameDetails( servername, serverurl, mapname, maxplayers, steamid, gamemode ) {
+            document.getElementById("map").innerHTML = "Карта: " + mapname;
+            document.getElementById("players").innerHTML = "Игроки: " + maxplayers; // Онлайн GMod не отдает напрямую тут, обычно пишут макс. слоты
+        }
+
+        // 2. Обновляем статус (что сейчас качается)
+        function SetStatusChanged( status ) {
+            document.getElementById("status").innerHTML = status;
+        }
+
+        // 3. Считаем процент загрузки файлов
+        function SetFilesTotal( total ) {
+            totalFiles = total;
+        }
+
+        function SetFilesNeeded( needed ) {
+            filesNeeded = needed;
+            refreshProgress();
+        }
+
+        function refreshProgress() {
+            if (totalFiles > 0) {
+                var percentage = Math.floor(((totalFiles - filesNeeded) / totalFiles) * 100);
+                document.getElementById("progress-bar").style.width = percentage + "%";
+                document.getElementById("percentage").innerHTML = "Прогресс: " + percentage + "%";
+            }
+        }
+    </script>
+</body>
+</html>
