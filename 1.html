@@ -1,79 +1,56 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body { margin: 0; padding: 0; font-family: 'Verdana', sans-serif; color: white; overflow: hidden; background: #000; }
-        
-        .background {
-            background-image: url('https://imgur.com/Ogvr8wQ.png');
-            background-size: cover; background-position: center;
-            height: 100vh; width: 100vw; position: absolute; z-index: -1;
-        }
+<style>
+    body { 
+        margin: 0; padding: 0; 
+        font-family: 'Verdana', sans-serif; 
+        color: white; 
+        overflow: hidden; 
+        background: #000; 
+        height: 100vh;
+    }
 
-        /* Та самая черная плашка-невидимка */
-        .gmod-blocker {
-            position: fixed; bottom: 0; left: 0;
-            width: 100%; height: 135px;
-            background: #000; z-index: 9990;
-        }
+    .background {
+        background-image: url('https://imgur.com/Ogvr8wQ.png');
+        background-size: cover; 
+        background-position: center;
+        height: 100vh; 
+        width: 100vw; 
+        position: absolute; 
+        z-index: -1;
+    }
 
-        .container {
-            position: absolute; bottom: 45px; left: 50px; right: 50px;
-            display: flex; justify-content: space-between; align-items: flex-end;
-            z-index: 9999; /* Выше черной плашки */
-        }
+    /* Создаем мощную черную "стену" внизу */
+    .blocker {
+        position: fixed;
+        bottom: -5px; /* Немного заходим за край */
+        left: -5px;
+        width: 110%;
+        height: 150px; /* Увеличь до 200px, если плашка всё еще видна */
+        background: black;
+        z-index: 999999;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
 
-        .info-left { font-size: 18px; text-shadow: 2px 2px 4px #000; text-transform: uppercase; }
-        .info-right { width: 350px; text-align: right; }
-        .progress-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.1); margin-bottom: 10px; }
-        #progress-bar { width: 0%; height: 100%; background: #fff; transition: width 0.4s ease; box-shadow: 0 0 10px #fff; }
-        #percentage { font-weight: bold; }
-        #status { font-size: 14px; opacity: 0.6; margin-bottom: 4px; }
-    </style>
-</head>
-<body>
-    <div class="background"></div>
-    <div class="gmod-blocker"></div> <div class="container">
-        <div class="info-left">
-            <div id="status">ПОДКЛЮЧЕНИЕ...</div>
-            <div id="map">Карта: Загрузка...</div>
-            <div id="players">Игроков: 0 / 0</div>
-        </div>
-        <div class="info-right">
-            <div class="progress-bg"><div id="progress-bar"></div></div>
-            <div id="percentage">Progress: 0%</div>
-        </div>
-    </div>
+    .container {
+        position: absolute; 
+        bottom: 160px; /* Поднимаем весь интерфейс НАД черным блоком */
+        left: 50px; 
+        right: 50px;
+        display: flex; 
+        justify-content: space-between; 
+        align-items: flex-end;
+        z-index: 1000000;
+    }
 
-    <script type="text/javascript">
-        var totalFiles = 0;
-        var serverIP = "176.120.179.233:27015";
+    .progress-bg { 
+        width: 300px; 
+        height: 4px; 
+        background: rgba(255,255,255,0.1); 
+    }
 
-        function updateOnline() {
-            fetch(`https://api.gmod.su/server/${serverIP}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (data && data.status === "success") {
-                        document.getElementById("players").innerHTML = "ИГРОКОВ: " + data.players + " / " + data.max_players;
-                    }
-                }).catch(e => console.log("API Offline"));
-        }
-        updateOnline();
-        setInterval(updateOnline, 15000);
-
-        function GameDetails(servername, serverurl, mapname, maxplayers) {
-            document.getElementById("map").innerHTML = "КАРТА: " + mapname;
-        }
-        function SetStatusChanged(status) { document.getElementById("status").innerHTML = status; }
-        function SetFilesTotal(total) { totalFiles = total; }
-        function SetFilesNeeded(needed) {
-            if (totalFiles > 0) {
-                var p = Math.floor(((totalFiles - needed) / totalFiles) * 100);
-                document.getElementById("progress-bar").style.width = p + "%";
-                document.getElementById("percentage").innerHTML = "Progress: " + p + "%";
-            }
-        }
-    </script>
-</body>
-</html>
+    #progress-bar { 
+        width: 0%; 
+        height: 100%; 
+        background: #fff; 
+        box-shadow: 0 0 15px #fff;
+    }
+</style>
