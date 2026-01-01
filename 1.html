@@ -3,110 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        body { 
-            margin: 0; padding: 0; 
-            font-family: 'Verdana', sans-serif; 
-            color: white; 
-            overflow: hidden; 
-            background: #000; 
+        /* Убираем все отступы и фиксируем экран */
+        html, body { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; background: #000; 
         }
 
         .background {
             background-image: url('https://imgur.com/Ogvr8wQ.png');
-            background-size: cover; 
-            background-position: center;
-            height: 100vh; width: 100vw; 
-            position: absolute; z-index: -1;
+            background-size: cover; background-position: center;
+            width: 100vw; height: 100vh;
+            position: fixed; top: 0; left: 0; z-index: 1;
         }
 
-        /* Затемнение всего фона для атмосферности */
-        .overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4);
+        /* Трюк со скрытием: создаем невидимый блок, который "съедает" фокус игры */
+        .viewport-fix {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 5; background: rgba(0,0,0,0.2); /* Легкое затемнение */
         }
 
-        /* Центральный контейнер */
-        .container {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%); /* Центрирование */
-            width: 600px;
-            text-align: center;
-            z-index: 10;
+        /* Интерфейс (Карта, Игроки) ставим максимально высоко */
+        .main-ui {
+            position: absolute; bottom: 10%; left: 5%; right: 5%;
+            z-index: 100; display: flex; justify-content: space-between;
+            align-items: flex-end; color: white; font-family: 'Verdana', sans-serif;
+            text-shadow: 0 0 10px rgba(0,0,0,1);
         }
 
-        .status-text {
-            font-size: 14px;
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-            opacity: 0.8;
-            text-transform: uppercase;
-        }
-
-        /* Полоска как в примере */
-        .progress-wrapper {
-            width: 100%;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.1);
-            margin: 20px 0;
-            position: relative;
-        }
-
-        #progress-bar {
-            width: 0%;
-            height: 100%;
-            background: #fff;
-            box-shadow: 0 0 15px #fff;
-            transition: width 0.4s ease;
-        }
-
-        .server-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            opacity: 0.6;
-            margin-top: 10px;
-        }
-
-        #percentage {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 10px;
+        .progress-container { width: 350px; text-align: right; }
+        .bar-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.1); margin-bottom: 10px; }
+        #bar-fill { width: 0%; height: 100%; background: #fff; box-shadow: 0 0 15px #fff; transition: 0.3s; }
+        
+        /* Скрываем серое окно физическим смещением */
+        body::after {
+            content: ""; position: fixed; bottom: 0; left: 0;
+            width: 100%; height: 120px; background: black; z-index: 90;
         }
     </style>
 </head>
 <body>
     <div class="background"></div>
-    <div class="overlay"></div>
+    <div class="viewport-fix"></div>
 
-    <div class="container">
-        <div id="status" class="status-text">ПОДКЛЮЧЕНИЕ...</div>
-        
-        <div class="progress-wrapper">
-            <div id="progress-bar"></div>
+    <div class="main-ui">
+        <div class="info">
+            <div id="status" style="font-size: 14px; opacity: 0.6; text-transform: uppercase;">Инициализация...</div>
+            <div id="map" style="font-size: 20px; margin: 5px 0;">Карта: -</div>
+            <div id="players" style="font-size: 16px; opacity: 0.8;">Игроков: 0 / 0</div>
         </div>
 
-        <div id="percentage">0%</div>
-
-        <div class="server-info">
-            <div id="map">КАРТА: -</div>
-            <div id="players">ИГРОКОВ: 0 / 0</div>
+        <div class="progress-container">
+            <div class="bar-bg"><div id="bar-fill"></div></div>
+            <div id="percentage" style="font-size: 24px; font-weight: bold;">0%</div>
         </div>
     </div>
 
-    <script type="text/javascript">
+    <script>
         var totalFiles = 0;
         var serverIP = "176.120.179.233:27015";
 
         function updateOnline() {
             fetch(`https://api.gmod.su/server/${serverIP}`)
-                .then(r => r.json())
-                .then(data => {
+                .then(r => r.json()).then(data => {
                     if (data && data.status === "success") {
                         document.getElementById("players").innerHTML = "ИГРОКОВ: " + data.players + " / " + data.max_players;
                     }
-                }).catch(e => console.log("API Offline"));
+                }).catch(e => console.log("API Error"));
         }
         updateOnline();
         setInterval(updateOnline, 15000);
@@ -114,12 +76,12 @@
         function GameDetails(servername, serverurl, mapname, maxplayers) {
             document.getElementById("map").innerHTML = "КАРТА: " + mapname;
         }
-        function SetStatusChanged(status) { document.getElementById("status").innerHTML = status; }
-        function SetFilesTotal(total) { totalFiles = total; }
-        function SetFilesNeeded(needed) {
+        function SetStatusChanged(s) { document.getElementById("status").innerHTML = s; }
+        function SetFilesTotal(t) { totalFiles = t; }
+        function SetFilesNeeded(n) {
             if (totalFiles > 0) {
-                var p = Math.floor(((totalFiles - needed) / totalFiles) * 100);
-                document.getElementById("progress-bar").style.width = p + "%";
+                var p = Math.floor(((totalFiles - n) / totalFiles) * 100);
+                document.getElementById("bar-fill").style.width = p + "%";
                 document.getElementById("percentage").innerHTML = p + "%";
             }
         }
