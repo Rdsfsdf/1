@@ -8,11 +8,7 @@
             font-family: 'Verdana', sans-serif;
             color: white;
             overflow: hidden; background: #000;
-            /* Плавное появление всего экрана */
-            animation: fadeIn 2s;
         }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .background {
             background-image: url('https://imgur.com/Ogvr8wQ.png');
@@ -25,45 +21,48 @@
         .overlay {
             position: absolute;
             bottom: 0; width: 100%; height: 40%;
-            background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
         }
 
         .container {
             position: absolute;
-            bottom: 60px; left: 60px; right: 60px;
+            bottom: 60px; left: 50px; right: 50px;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
+            z-index: 10;
         }
 
         .info-left {
-            font-size: 18px;
-            line-height: 1.6;
+            font-size: 16px;
+            line-height: 1.4;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             text-shadow: 2px 2px 4px #000;
         }
 
         .info-right {
-            width: 400px;
+            width: 300px;
             text-align: right;
             text-shadow: 2px 2px 4px #000;
         }
 
+        /* Наша полоска прогресса */
         .progress-bg {
-            width: 100%; height: 4px;
+            width: 100%; height: 3px;
             background: rgba(255,255,255,0.1);
-            margin-bottom: 12px;
-            border-radius: 2px;
+            margin-bottom: 8px;
         }
 
         #progress-bar {
             width: 0%; height: 100%;
             background: #fff;
-            box-shadow: 0 0 15px rgba(255,255,255,0.7);
-            transition: width 0.5s ease;
+            box-shadow: 0 0 10px #fff;
+            transition: width 0.4s ease;
         }
 
-        #status { font-size: 14px; opacity: 0.6; margin-bottom: 5px; text-transform: uppercase; }
-        #percentage { font-weight: bold; letter-spacing: 1px; }
+        #percentage { font-size: 14px; opacity: 0.8; }
+        #status { font-size: 12px; margin-bottom: 5px; opacity: 0.6; }
     </style>
 </head>
 <body>
@@ -72,38 +71,37 @@
 
     <div class="container">
         <div class="info-left">
-            <div id="status">Инициализация...</div>
-            <div id="map">Карта: Загрузка...</div>
-            <div id="players">Слоты: -</div>
+            <div id="status">ИНИЦИАЛИЗАЦИЯ...</div>
+            <div id="map">Карта: -</div>
+            <div id="players">Игроков: 0 / -</div>
         </div>
 
         <div class="info-right">
             <div class="progress-bg"><div id="progress-bar"></div></div>
-            <div id="percentage">0%</div>
+            <div id="percentage">Progress: 0%</div>
         </div>
     </div>
 
     <script type="text/javascript">
         var totalFiles = 0;
 
-        function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode) {
+        function GameDetails(servername, serverurl, mapname, maxplayers) {
             document.getElementById("map").innerHTML = "Карта: " + mapname;
-            document.getElementById("players").innerHTML = "Макс. игроков: " + maxplayers;
+            // Устанавливаем макс. игроков, онлайн при загрузке всегда будет 0 или 1
+            document.getElementById("players").innerHTML = "Игроков: 0 / " + maxplayers;
         }
 
         function SetStatusChanged(status) {
             document.getElementById("status").innerHTML = status;
         }
 
-        function SetFilesTotal(total) {
-            totalFiles = total;
-        }
+        function SetFilesTotal(total) { totalFiles = total; }
 
         function SetFilesNeeded(needed) {
             if (totalFiles > 0) {
                 var p = Math.floor(((totalFiles - needed) / totalFiles) * 100);
                 document.getElementById("progress-bar").style.width = p + "%";
-                document.getElementById("percentage").innerHTML = "ЗАГРУЗКА: " + p + "%";
+                document.getElementById("percentage").innerHTML = "Progress: " + p + "%";
             }
         }
     </script>
