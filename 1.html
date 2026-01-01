@@ -21,7 +21,7 @@
         .overlay {
             position: absolute;
             bottom: 0; width: 100%; height: 40%;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
         }
 
         .container {
@@ -47,7 +47,6 @@
             text-shadow: 2px 2px 4px #000;
         }
 
-        /* Наша полоска прогресса */
         .progress-bg {
             width: 100%; height: 3px;
             background: rgba(255,255,255,0.1);
@@ -72,8 +71,8 @@
     <div class="container">
         <div class="info-left">
             <div id="status">ИНИЦИАЛИЗАЦИЯ...</div>
-            <div id="map">Карта: -</div>
-            <div id="players">Игроков: 0 / -</div>
+            <div id="map">Карта: Загрузка...</div>
+            <div id="players">Игроков: 0 / 0</div>
         </div>
 
         <div class="info-right">
@@ -84,11 +83,31 @@
 
     <script type="text/javascript">
         var totalFiles = 0;
+        var serverIP = "176.120.179.233:27015";
 
+        // Функция запроса реального онлайна
+        function updateOnline() {
+            fetch(`https://api.gmod.su/server/${serverIP}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.status === "success") {
+                        document.getElementById("players").innerHTML = `Игроков: ${data.players} / ${data.max_players}`;
+                    }
+                })
+                .catch(err => console.log("Ошибка API онлайна"));
+        }
+
+        // Запускаем обновление онлайна сразу и каждые 15 сек
+        updateOnline();
+        setInterval(updateOnline, 15000);
+
+        // Стандартные функции GMod
         function GameDetails(servername, serverurl, mapname, maxplayers) {
             document.getElementById("map").innerHTML = "Карта: " + mapname;
-            // Устанавливаем макс. игроков, онлайн при загрузке всегда будет 0 или 1
-            document.getElementById("players").innerHTML = "Игроков: 0 / " + maxplayers;
+            // Если API еще не ответило, подставляем макс. игроков из движка
+            if(document.getElementById("players").innerText.includes("-")) {
+                document.getElementById("players").innerHTML = "Игроков: 0 / " + maxplayers;
+            }
         }
 
         function SetStatusChanged(status) {
